@@ -321,13 +321,11 @@ class renderer extends plugin_renderer_base {
         $table = new html_table();
         $table->head = [
                 html_writer::checkbox('cb_selector', 0, false, '', ['id' => 'cb_selector']),
-                get_string('date', 'attendance'),
-                get_string('time', 'attendance'),
                 get_string('sessiontypeshort', 'attendance'),
                 get_string('description', 'attendance'),
         ];
-        $table->align = ['center', 'right', '', '', 'left'];
-        $table->size = ['1px', '1px', '1px', '', '*'];
+        $table->align = ['center', 'left', 'left'];
+        $table->size = ['1px', '200px', '*'];
 
         // Add custom fields.
         $customfields = [];
@@ -353,22 +351,22 @@ class renderer extends plugin_renderer_base {
             $dta = $this->construct_date_time_actions($sessdata, $sess);
             $table->data[$sess->id][] = html_writer::checkbox('sessid[]', $sess->id, false, '',
                                                               ['class' => 'attendancesesscheckbox']);
-            $table->data[$sess->id][] = $dta['date'];
-            $table->data[$sess->id][] = $dta['time'];
+            
+            // Show session type
             if ($sess->groupid) {
                 if (empty($sessdata->groups[$sess->groupid])) {
                     $table->data[$sess->id][] = get_string('deletedgroup', 'attendance');
-                    // Remove actions and links on date/time.
-                    $dta['actions'] = '';
-                    $dta['date'] = userdate($sess->sessdate, get_string('strftimedmyw', 'attendance'));
-                    $dta['time'] = $this->construct_time($sess->sessdate, $sess->duration);
                 } else {
                     $table->data[$sess->id][] = get_string('group') . ': ' . $sessdata->groups[$sess->groupid]->name;
                 }
             } else {
                 $table->data[$sess->id][] = get_string('commonsession', 'attendance');
             }
+
+            // Show description
             $table->data[$sess->id][] = format_text($sess->description);
+
+            // Add custom fields data
             foreach ($customfields as $field) {
                 if (isset($customfieldsdata[$sess->id][$field->get('id')])) {
                     $table->data[$sess->id][] = $customfieldsdata[$sess->id][$field->get('id')]->get('value');
@@ -376,8 +374,9 @@ class renderer extends plugin_renderer_base {
                     $table->data[$sess->id][] = '';
                 }
             }
-            $table->data[$sess->id][] = $dta['actions'];
 
+            // Add actions
+            $table->data[$sess->id][] = $dta['actions'];
         }
 
         return html_writer::table($table);
