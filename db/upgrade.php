@@ -814,5 +814,17 @@ function xmldb_attendance_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2023032800, 'attendance');
     }
 
+    if ($oldversion < 2024032100) {
+        // Add theoretical_time column to attendance_statuses table
+        $table = new xmldb_table('attendance_statuses');
+        $field = new xmldb_field('theoretical_time', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'setnumber');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2024032100, 'attendance');
+    }
+
     return true;
 }

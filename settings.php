@@ -220,4 +220,14 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtextarea('attendance/emailcontent',
         get_string('emailcontent', 'attendance'), get_string('emailcontent_help', 'attendance'),
         get_string('emailcontent_default', 'attendance'), PARAM_RAW));
+
+    $settings->add(new admin_setting_configtext('attendance/thirdpartyemailtextfooter',
+        get_string('thirdpartyemailtextfooter', 'attendance'),
+        get_string('thirdpartyemailtextfooter_desc', 'attendance'),
+        get_string('thirdpartyemailtextfooter', 'attendance'), PARAM_TEXT));
+
+    $settings->add(new admin_setting_configtext('attendance/customfield_shortname',
+        get_string('customfield_shortname', 'attendance'),
+        get_string('customfield_shortname_desc', 'attendance'),
+        'temps_theorique', PARAM_TEXT));
 }
