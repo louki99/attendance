@@ -763,7 +763,7 @@ class mod_attendance_structure {
      * @param stdClass $data
      */
     public function take_from_form_data($data) {
-        global $USER;
+        global $USER, $DB;
         // WARNING - $data is unclean - comes from direct $_POST - ideally needs a rewrite but we do some cleaning below.
 
         $statuses = implode(',', array_keys( (array)$this->get_statuses() ));
@@ -771,6 +771,41 @@ class mod_attendance_structure {
         $sesslog = [];
 
         $formdata = (array)$data;
+
+        // Get the theoretical time from the session's custom field
+        $session = $DB->get_record('attendance_sessions', ['id' => $this->pageparams->sessionid], '*', MUST_EXIST);
+        
+        // Debug information
+        debugging('Session ID: ' . $this->pageparams->sessionid);
+        
+        // Get the custom field data using direct database query
+        $theoreticaltime = null;
+        
+        // First get the field ID for 'temps_theorique' using a simpler query
+        $field = $DB->get_record('customfield_field', ['shortname' => 'temps_theorique']);
+        
+        if ($field) {
+            debugging('Found temps_theorique field with ID: ' . $field->id);
+            
+            // Get the field data for this session
+            $fielddata = $DB->get_record(
+                'customfield_data',
+                ['fieldid' => $field->id, 'instanceid' => $session->id]
+            );
+            
+            if ($fielddata) {
+                $theoreticaltime = $fielddata->value;
+                debugging('Found theoretical time value: ' . $theoreticaltime);
+            } else {
+                debugging('No field data found for temps_theorique');
+            }
+        } else {
+            debugging('No temps_theorique field found');
+        }
+
+        if ($theoreticaltime === null) {
+            debugging('Warning: No theoretical time value found for session');
+        }
 
         foreach ($formdata as $key => $value) {
             // Look at Remarks field because the user options may not be passed if empty.
@@ -783,6 +818,13 @@ class mod_attendance_structure {
                 $sesslog[$sid]->studentid = $sid; // We check is_numeric on this above.
                 if (array_key_exists('user' . $sid, $formdata) && is_numeric($formdata['user' . $sid])) {
                     $sesslog[$sid]->statusid = $formdata['user' . $sid];
+                    // Set the theoretical time from the session's custom field
+                    if ($theoreticaltime !== null) {
+                        $sesslog[$sid]->theoretical_time = $theoreticaltime;
+                        debugging('Setting theoretical_time for student ' . $sid . ': ' . $theoreticaltime);
+                    } else {
+                        debugging('Warning: theoretical_time is null for student ' . $sid);
+                    }
                 }
                 $sesslog[$sid]->statusset = $statuses;
                 $sesslog[$sid]->remarks = $value;
