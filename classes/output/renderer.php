@@ -331,7 +331,7 @@ class renderer extends plugin_renderer_base {
         $customfields = [];
         if (!empty($sessdata->sessions)) {
             $handler = \mod_attendance\customfield\session_handler::create();
-            $customfields = $handler->get_fields_for_display(reset($sessdata->sessions)->id); // Pass first sessionid.
+            $customfields = $handler->get_fields_for_display(reset($sessdata->sessions)->id);
             $customfieldsdata = $handler->get_instances_data(array_keys($sessdata->sessions));
         }
         foreach ($customfields as $field) {

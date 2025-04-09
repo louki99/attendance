@@ -55,6 +55,25 @@ class addsession extends moodleform {
 
         $mform->addElement('header', 'general', get_string('addsession', 'attendance'));
 
+        // Add hidden fields for sessdate and duration
+        $mform->addElement('hidden', 'sessdate', time());
+        $mform->setType('sessdate', PARAM_INT);
+        $mform->addElement('hidden', 'duration', 0);
+        $mform->setType('duration', PARAM_INT);
+
+        // Select which status set to use.
+        $maxstatusset = attendance_get_max_statusset($this->_customdata['att']->id);
+        if ($maxstatusset > 0) {
+            $opts = [];
+            for ($i = 0; $i <= $maxstatusset; $i++) {
+                $opts[$i] = attendance_get_setname($this->_customdata['att']->id, $i);
+            }
+            $mform->addElement('select', 'statusset', get_string('usestatusset', 'mod_attendance'), $opts);
+        } else {
+            $mform->addElement('hidden', 'statusset', 0);
+            $mform->setType('statusset', PARAM_INT);
+        }
+
         $groupmode = groups_get_activity_groupmode($cm);
         switch ($groupmode) {
             case NOGROUPS:
@@ -107,21 +126,6 @@ class addsession extends moodleform {
                     return;
                 }
             }
-        }
-
-        attendance_form_sessiondate_selector($mform);
-
-        // Select which status set to use.
-        $maxstatusset = attendance_get_max_statusset($this->_customdata['att']->id);
-        if ($maxstatusset > 0) {
-            $opts = [];
-            for ($i = 0; $i <= $maxstatusset; $i++) {
-                $opts[$i] = attendance_get_setname($this->_customdata['att']->id, $i);
-            }
-            $mform->addElement('select', 'statusset', get_string('usestatusset', 'mod_attendance'), $opts);
-        } else {
-            $mform->addElement('hidden', 'statusset', 0);
-            $mform->setType('statusset', PARAM_INT);
         }
 
         $mform->addElement('editor', 'sdescription', get_string('description', 'attendance'), ['rows' => 1, 'columns' => 80],
@@ -361,7 +365,7 @@ class addsession extends moodleform {
                 $errors['sdays'] = get_string('checkweekdays', 'attendance');
             }
         }
-        if ($addmulti && ceil(($data['sessionenddate'] - $data['sessiondate']) / YEARSECS) > 1) {
+        if (($addmulti != 0) && ceil(($data['sessionenddate'] - $data['sessiondate']) / YEARSECS) > 1) {
             $errors['sessionenddate'] = get_string('timeahead', 'attendance');
         }
         $sessstart = $data['sessiondate'] + $sesstarttime;

@@ -501,6 +501,15 @@ class mod_attendance_structure {
 
         $sess->attendanceid = $this->id;
         $sess->automarkcompleted = 0;
+        
+        // Set default values for date and time if not provided
+        if (!isset($sess->sessdate) || empty($sess->sessdate)) {
+            $sess->sessdate = time();
+        }
+        if (!isset($sess->duration) || empty($sess->duration)) {
+            $sess->duration = 0;
+        }
+        
         if (!isset($sess->automark)) {
             $sess->automark = 0;
         }
