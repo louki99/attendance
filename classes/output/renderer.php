@@ -2789,6 +2789,12 @@ class renderer extends plugin_renderer_base {
                 'maxlength' => $maxlength,
                 'value'     => $value,
                 'class' => "form-control {$classname}", ];
+        
+        // Disable the field if it's an acronym field
+        if (strpos($name, 'acronym') !== false) {
+            $attributes['disabled'] = 'disabled';
+        }
+        
         return html_writer::empty_tag('input', $attributes);
     }
 
