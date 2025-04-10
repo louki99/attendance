@@ -787,7 +787,7 @@ class mod_attendance_structure {
         if ($field) {
             debugging('Found temps_theorique field with ID: ' . $field->id);
             
-            // Get the field data for this session
+            // Get the field data for this course
             $fielddata = $DB->get_record(
                 'customfield_data',
                 ['fieldid' => $field->id, 'instanceid' => $this->course->id]
@@ -803,26 +803,34 @@ class mod_attendance_structure {
             debugging('No temps_theorique field found');
         }
 
+        // Get the status ID for "Absent" for this specific attendance instance
+        $absentstatus = $DB->get_record('attendance_statuses', 
+            ['attendanceid' => $this->id, 'acronym' => 'A'], 'id');
+        $absentstatusid = $absentstatus ? $absentstatus->id : null;
+        debugging('Absent status ID for attendance ' . $this->id . ': ' . ($absentstatusid ?? 'not found'));
+
         if ($theoreticaltime === null) {
             debugging('Warning: No theoretical time value found for session');
         }
 
         foreach ($formdata as $key => $value) {
-            
-            debugging('Processing key: ' . $key . ', value: ' . $value);
-
             // Look at Remarks field because the user options may not be passed if empty.
             if (substr($key, 0, 7) == 'remarks') {
                 $sid = substr($key, 7);
                 if (!(is_numeric($sid))) { // Sanity check on $sid.
                     throw new moodle_exception('nonnumericid', 'attendance');
                 }
+                
                 $sesslog[$sid] = new stdClass();
                 $sesslog[$sid]->studentid = $sid; // We check is_numeric on this above.
                 if (array_key_exists('user' . $sid, $formdata) && is_numeric($formdata['user' . $sid])) {
                     $sesslog[$sid]->statusid = $formdata['user' . $sid];
-                    // Set the theoretical time from the session's custom field
-                    if ($theoreticaltime !== null) {
+                    
+                    // Check if the student is marked as Absent
+                    if ($absentstatusid && $formdata['user' . $sid] == $absentstatusid) {
+                        $sesslog[$sid]->theoretical_time = 0;
+                        debugging('Student ' . $sid . ' marked as Absent, setting theoretical_time to 0');
+                    } else if ($theoreticaltime !== null) {
                         $sesslog[$sid]->theoretical_time = $theoreticaltime;
                         debugging('Setting theoretical_time for student ' . $sid . ': ' . $theoreticaltime);
                     } else {
