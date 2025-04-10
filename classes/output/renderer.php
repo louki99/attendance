@@ -323,9 +323,11 @@ class renderer extends plugin_renderer_base {
                 html_writer::checkbox('cb_selector', 0, false, '', ['id' => 'cb_selector']),
                 get_string('sessiontypeshort', 'attendance'),
                 get_string('description', 'attendance'),
+                get_string('date', 'attendance'),
+                get_string('theoreticaltime', 'attendance')
         ];
-        $table->align = ['center', 'left', 'left'];
-        $table->size = ['1px', '200px', '*'];
+        $table->align = ['center', 'left', 'left', 'left', 'left'];
+        $table->size = ['1px', '200px', '300px', '200px','*'];
 
         // Add custom fields.
         $customfields = [];
@@ -366,6 +368,12 @@ class renderer extends plugin_renderer_base {
             // Show description
             $table->data[$sess->id][] = format_text($sess->description);
 
+            //Show date
+            $table->data[$sess->id][] = !empty($sess->sessdate) ? userdate($sess->sessdate,'%d/%m/%Y', get_string('strftimedmyw', 'attendance')) : '-';
+
+            // Show theoretical time
+            $table->data[$sess->id][] = !empty($sess->theoretical_time) ? $sess->theoretical_time . ' ' . get_string('minutes', 'attendance') : '-';
+           
             // Add custom fields data
             foreach ($customfields as $field) {
                 if (isset($customfieldsdata[$sess->id][$field->get('id')])) {
@@ -2077,16 +2085,23 @@ class renderer extends plugin_renderer_base {
     }
 
     /**
-     * Construct time for display.
+     * Construct time string with date and time.
      *
      * @param int $datetime
      * @param int $duration
      * @return string
      */
     private function construct_time($datetime, $duration) {
-        $time = html_writer::tag('nobr', attendance_construct_session_time($datetime, $duration));
+        // Format the date using userdate with the strftimedmyw format string
+        $date = userdate($datetime, get_string('strftimedmyw', 'attendance'));
+        
+        // Format the time using the existing function
+        $time = attendance_construct_session_time($datetime, $duration);
+        
+        // Combine date and time
+        $datetime = html_writer::tag('nobr', $date . ' ' . $time);
 
-        return $time;
+        return $datetime;
     }
 
     /**

@@ -784,10 +784,10 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
     debugging('Course ID: ' . $att->course->id);
     debugging('Form data: ' . print_r($formdata, true));
 
-    $sesstarttime = $formdata->sestime['starthour'] * HOURSECS + $formdata->sestime['startminute'] * MINSECS;
-    $sesendtime = $formdata->sestime['endhour'] * HOURSECS + $formdata->sestime['endminute'] * MINSECS;
-    $sessiondate = $formdata->sessiondate + $sesstarttime;
-    $duration = $sesendtime - $sesstarttime;
+    // The sessdate from date_time_selector already includes both date and time
+    $sessiondate = $formdata->sessdate;
+    $duration = isset($formdata->duration) ? $formdata->duration : 0;
+
     if (empty(get_config('attendance', 'enablewarnings'))) {
         $absenteereport = get_config('attendance', 'absenteereport_default');
     } else {
@@ -835,8 +835,7 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
                 $dinfo = usergetdate($sdate);
                 if (isset($formdata->sdays) && array_key_exists($wdaydesc[$dinfo['wday']], $formdata->sdays)) {
                     $sess = new stdClass();
-                    $sess->sessdate = make_timestamp($dinfo['year'], $dinfo['mon'], $dinfo['mday'],
-                        $formdata->sestime['starthour'], $formdata->sestime['startminute']);
+                    $sess->sessdate = $sdate;
                     $sess->duration = $duration;
                     $sess->descriptionitemid = $formdata->sdescription['itemid'];
                     $sess->description = $formdata->sdescription['text'];

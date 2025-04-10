@@ -97,6 +97,12 @@ class updatesession extends \moodleform {
         }
         $mform->addElement('static', 'sessiontypedescription', get_string('sessiontype', 'attendance'), $strtype);
 
+        // Add date selector
+        $mform->addElement('date_time_selector', 'sessiondate', get_string('sessiondate', 'attendance'));
+        $mform->setType('sessiondate', PARAM_INT);
+        $mform->addRule('sessiondate', get_string('required'), 'required');
+        $mform->setDefault('sessiondate', $sess->sessdate);
+
         // Add theoretical time field
         $mform->addElement('text', 'theoretical_time', get_string('theoreticaltime', 'attendance'));
         $mform->setType('theoretical_time', PARAM_INT);

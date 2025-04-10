@@ -55,17 +55,22 @@ class addsession extends moodleform {
 
         $mform->addElement('header', 'general', get_string('addsession', 'attendance'));
 
-        // Add hidden fields for sessdate and duration
-        $mform->addElement('hidden', 'sessdate', time());
+        // Add date and time selectors
+        $mform->addElement('date_time_selector', 'sessdate', get_string('sessiondate', 'attendance'));
         $mform->setType('sessdate', PARAM_INT);
-        $mform->addElement('hidden', 'duration', 0);
-        $mform->setType('duration', PARAM_INT);
+        $mform->addRule('sessdate', get_string('required'), 'required');
+
+        // Add duration field (in minutes)
+        // $mform->addElement('text', 'duration', get_string('duration', 'attendance'));
+        // $mform->setType('duration', PARAM_INT);
+        // $mform->addRule('duration', get_string('required'), 'required');
+        // $mform->setDefault('duration', 60); // Default duration of 60 minutes
 
         // Add theoretical time field
         $mform->addElement('text', 'theoretical_time', get_string('theoreticaltime', 'attendance'));
         $mform->setType('theoretical_time', PARAM_INT);
         $mform->addRule('theoretical_time', get_string('required'), 'required');
-        $mform->setDefault('theoretical_time', 60); // Default value of 60 minutes
+        $mform->setDefault('theoretical_time', 20); // Default value of 60 minutes
 
         // Select which status set to use.
         $maxstatusset = attendance_get_max_statusset($this->_customdata['att']->id);

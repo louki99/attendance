@@ -631,6 +631,7 @@ $string['thirdpartyemailsubject'] = 'Attendance warning';
 $string['thirdpartyemailtext'] = '{$a->firstname} {$a->lastname} attendance within {$a->coursename} {$a->aname} is lower than {$a->warningpercent} ({$a->percent})';
 $string['thirdpartyemailtextfooter'] = 'You are receiving this because the teacher of this course has added your email to the recipient\'s list';
 $string['theoreticaltime'] = 'Theoretical time (minutes)';
+$string['minutes'] = 'minutes';
 $string['theoretical_time_exceeded'] = 'Theoretical time cannot exceed {$a} minutes';
 $string['thiscourse'] = 'This course';
 $string['time'] = 'Time';
