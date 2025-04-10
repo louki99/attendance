@@ -790,7 +790,7 @@ class mod_attendance_structure {
             // Get the field data for this session
             $fielddata = $DB->get_record(
                 'customfield_data',
-                ['fieldid' => $field->id, 'instanceid' => $session->id]
+                ['fieldid' => $field->id, 'instanceid' => $this->course->id]
             );
             
             if ($fielddata) {
@@ -808,6 +808,9 @@ class mod_attendance_structure {
         }
 
         foreach ($formdata as $key => $value) {
+            
+            debugging('Processing key: ' . $key . ', value: ' . $value);
+
             // Look at Remarks field because the user options may not be passed if empty.
             if (substr($key, 0, 7) == 'remarks') {
                 $sid = substr($key, 7);

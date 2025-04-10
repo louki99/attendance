@@ -228,6 +228,5 @@ if ($ADMIN->fulltree) {
 
     $settings->add(new admin_setting_configtext('attendance/customfield_shortname',
         get_string('customfield_shortname', 'attendance'),
-        get_string('customfield_shortname_desc', 'attendance'),
-        'temps_theorique', PARAM_TEXT));
+        get_string('customfield_shortname_desc', 'attendance'),'temps_theorique', PARAM_TEXT));
 }
