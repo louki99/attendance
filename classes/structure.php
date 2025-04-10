@@ -770,36 +770,12 @@ class mod_attendance_structure {
 
         $formdata = (array)$data;
 
-        // Get the theoretical time from the session's custom field
+        // Get the session record which contains the theoretical time
         $session = $DB->get_record('attendance_sessions', ['id' => $this->pageparams->sessionid], '*', MUST_EXIST);
+        $theoreticaltime = $session->theoretical_time;
         
-        // Debug information
         debugging('Session ID: ' . $this->pageparams->sessionid);
-        
-        // Get the custom field data using direct database query
-        $theoreticaltime = null;
-        
-        // First get the field ID for 'temps_theorique' using a simpler query
-        $field = $DB->get_record('customfield_field', ['shortname' => 'temps_theorique']);
-        
-        if ($field) {
-            debugging('Found temps_theorique field with ID: ' . $field->id);
-            
-            // Get the field data for this course
-            $fielddata = $DB->get_record(
-                'customfield_data',
-                ['fieldid' => $field->id, 'instanceid' => $this->course->id]
-            );
-            
-            if ($fielddata) {
-                $theoreticaltime = $fielddata->value;
-                debugging('Found theoretical time value: ' . $theoreticaltime);
-            } else {
-                debugging('No field data found for temps_theorique');
-            }
-        } else {
-            debugging('No temps_theorique field found');
-        }
+        debugging('Session theoretical time: ' . $theoreticaltime);
 
         // Get the status ID for "Absent" for this specific attendance instance
         $absentstatus = $DB->get_record('attendance_statuses', 
