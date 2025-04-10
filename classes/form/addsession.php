@@ -61,6 +61,12 @@ class addsession extends moodleform {
         $mform->addElement('hidden', 'duration', 0);
         $mform->setType('duration', PARAM_INT);
 
+        // Add theoretical time field
+        $mform->addElement('text', 'theoretical_time', get_string('theoreticaltime', 'attendance'));
+        $mform->setType('theoretical_time', PARAM_INT);
+        $mform->addRule('theoretical_time', get_string('required'), 'required');
+        $mform->setDefault('theoretical_time', 60); // Default value of 60 minutes
+
         // Select which status set to use.
         $maxstatusset = attendance_get_max_statusset($this->_customdata['att']->id);
         if ($maxstatusset > 0) {
@@ -395,6 +401,24 @@ class addsession extends moodleform {
             $errors['preventsharedgroup'] = get_string('iptimemissing', 'attendance');
 
         }
+
+        // Get the course's theoretical time limit from custom field
+        $courseid = $this->_customdata['course']->id;
+        debugging('Course ID: ' . $courseid);
+        $customfieldshortname = get_config('attendance', 'customfield_shortname');
+        $coursefield = $DB->get_record('customfield_data', array('instanceid' => $courseid, 'fieldid' => 
+                       $DB->get_field('customfield_field', 'id', array('shortname' => $customfieldshortname))));
+
+        debugging('Course field: ' . print_r($coursefield, true));
+
+        if ($coursefield) {
+            $coursethetime = $coursefield->value;
+            debugging('Course time louki: ' . $coursethetime);
+            if ($data['theoretical_time'] > $coursethetime) {
+                $errors['theoretical_time'] = get_string('theoretical_time_exceeded', 'attendance', $coursethetime);
+            }
+        }
+
         return $errors;
     }
 

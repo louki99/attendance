@@ -283,11 +283,11 @@ class mod_attendance_structure {
         global $DB;
 
         if ($this->pageparams->startdate && $this->pageparams->enddate) {
-            $where = "attendanceid = :aid AND sessdate >= :csdate AND sessdate >= :sdate AND sessdate < :edate";
+            $where = "attendanceid = :aid AND sessdate >= :sdate AND sessdate < :edate";
         } else if ($this->pageparams->enddate) {
-            $where = "attendanceid = :aid AND sessdate >= :csdate AND sessdate < :edate";
+            $where = "attendanceid = :aid AND sessdate < :edate";
         } else {
-            $where = "attendanceid = :aid AND sessdate >= :csdate";
+            $where = "attendanceid = :aid";
         }
 
         if ($this->pageparams->get_current_sesstype() > mod_attendance_page_with_filter_controls::SESSTYPE_ALL) {
@@ -295,7 +295,6 @@ class mod_attendance_structure {
         }
         $params = [
             'aid'       => $this->id,
-            'csdate'    => $this->course->startdate,
             'sdate'     => $this->pageparams->startdate,
             'edate'     => $this->pageparams->enddate,
             'cgroup'    => $this->pageparams->get_current_sesstype(), ];
@@ -517,14 +516,45 @@ class mod_attendance_structure {
             // If calendard disabled at site level, don't use it.
             $sess->calendarevent = 0;
         }
-        $sess->id = $DB->insert_record('attendance_sessions', $sess);
-        $description = file_save_draft_area_files($sess->descriptionitemid,
-            $this->context->id, 'mod_attendance', 'session', $sess->id,
-            ['subdirs' => false, 'maxfiles' => -1, 'maxbytes' => 0],
-            $sess->description);
-        $DB->set_field('attendance_sessions', 'description', $description, ['id' => $sess->id]);
+        if (!isset($sess->theoretical_time)) {
+            $sess->theoretical_time = 0;
+        }
 
+        // Set required fields before insert
+        $sess->description = '';  // Initialize empty description
+        $sess->descriptionformat = FORMAT_HTML;  // Set default format
+        $sess->lasttaken = 0;
+        $sess->lasttakenby = 0;
+        $sess->studentscanmark = !isset($sess->studentscanmark) ? 0 : $sess->studentscanmark;
+        $sess->allowupdatestatus = !isset($sess->allowupdatestatus) ? 0 : $sess->allowupdatestatus;
+        $sess->studentsearlyopentime = !isset($sess->studentsearlyopentime) ? 0 : $sess->studentsearlyopentime;
+        $sess->autoassignstatus = !isset($sess->autoassignstatus) ? 0 : $sess->autoassignstatus;
+        $sess->studentpassword = !isset($sess->studentpassword) ? '' : $sess->studentpassword;
+        $sess->subnet = !isset($sess->subnet) ? '' : $sess->subnet;
+        $sess->preventsharedip = !isset($sess->preventsharedip) ? 0 : $sess->preventsharedip;
+        $sess->preventsharediptime = !isset($sess->preventsharediptime) ? '' : $sess->preventsharediptime;
+        $sess->includeqrcode = !isset($sess->includeqrcode) ? 0 : $sess->includeqrcode;
+        $sess->rotateqrcode = !isset($sess->rotateqrcode) ? 0 : $sess->rotateqrcode;
+        $sess->rotateqrcodesecret = !isset($sess->rotateqrcodesecret) ? '' : $sess->rotateqrcodesecret;
+        $sess->automarkcmid = !isset($sess->automarkcmid) ? null : $sess->automarkcmid;
         $sess->caleventid = 0;
+        $sess->timemodified = time();
+        $sess->statusset = !isset($sess->statusset) ? 0 : $sess->statusset;
+        $sess->absenteereport = !isset($sess->absenteereport) ? 1 : $sess->absenteereport;
+        $sess->groupid = !isset($sess->groupid) ? 0 : $sess->groupid;
+
+        $sess->id = $DB->insert_record('attendance_sessions', $sess);
+        
+        // Handle description from form data if it exists
+        if (isset($sess->sdescription)) {
+            $description = file_save_draft_area_files($sess->sdescription['itemid'],
+                $this->context->id, 'mod_attendance', 'session', $sess->id,
+                ['subdirs' => false, 'maxfiles' => -1, 'maxbytes' => 0], $sess->sdescription['text']);
+            $sess->description = $description;
+            $sess->descriptionformat = $sess->sdescription['format'];
+            $DB->update_record('attendance_sessions', $sess);
+        }
+
         attendance_create_calendar_event($sess);
 
         $infoarray = [];
@@ -537,45 +567,6 @@ class mod_attendance_structure {
             'other' => ['info' => implode(',', $infoarray)],
         ]);
         $event->add_record_snapshot('course_modules', $this->cm);
-        $sess->description = $description;
-        $sess->lasttaken = 0;
-        $sess->lasttakenby = 0;
-        if (!isset($sess->studentscanmark)) {
-            $sess->studentscanmark = 0;
-        }
-        if (!isset($sess->allowupdatestatus)) {
-            $sess->allowupdatestatus = 0;
-        }
-        if (!isset($sess->studentsearlyopentime)) {
-            $sess->studentsearlyopentime = 0;
-        }
-        if (!isset($sess->autoassignstatus)) {
-            $sess->autoassignstatus = 0;
-        }
-        if (!isset($sess->studentpassword)) {
-            $sess->studentpassword = '';
-        }
-        if (!isset($sess->subnet)) {
-            $sess->subnet = '';
-        }
-
-        if (!isset($sess->preventsharedip)) {
-            $sess->preventsharedip = 0;
-        }
-
-        if (!isset($sess->preventsharediptime)) {
-            $sess->preventsharediptime = '';
-        }
-        if (!isset($sess->includeqrcode)) {
-            $sess->includeqrcode = 0;
-        }
-        if (!isset($sess->rotateqrcode)) {
-            $sess->rotateqrcode = 0;
-            $sess->rotateqrcodesecret = '';
-        }
-        if (!isset($sess->automarkcmid)) {
-            $sess->automarkcmid = null;
-        }
         $event->add_record_snapshot('attendance_sessions', $sess);
         $event->trigger();
 
@@ -601,11 +592,14 @@ class mod_attendance_structure {
         $sess->sessdate = $formdata->sessiondate + $sesstarttime;
         $sess->duration = $sesendtime - $sesstarttime;
 
-        $description = file_save_draft_area_files($formdata->sdescription['itemid'],
-            $this->context->id, 'mod_attendance', 'session', $sessionid,
-            ['subdirs' => false, 'maxfiles' => -1, 'maxbytes' => 0], $formdata->sdescription['text']);
-        $sess->description = $description;
-        $sess->descriptionformat = $formdata->sdescription['format'];
+        // Handle the description from the editor
+        if (isset($formdata->sdescription)) {
+            $description = file_save_draft_area_files($formdata->sdescription['itemid'],
+                $this->context->id, 'mod_attendance', 'session', $sessionid,
+                ['subdirs' => false, 'maxfiles' => -1, 'maxbytes' => 0], $formdata->sdescription['text']);
+            $sess->description = $description;
+            $sess->descriptionformat = $formdata->sdescription['format'];
+        }
         $sess->calendarevent = empty($formdata->calendarevent) ? 0 : $formdata->calendarevent;
 
         $sess->studentscanmark = 0;
@@ -627,6 +621,10 @@ class mod_attendance_structure {
         }
         if (!empty($formdata->autoassignstatus)) {
             $sess->autoassignstatus = $formdata->autoassignstatus;
+        }
+        if (!empty($formdata->theoretical_time)) {
+            debugging('Theoretical time form: ' . $formdata->theoretical_time);
+            $sess->theoretical_time = $formdata->theoretical_time;
         }
         $studentscanmark = get_config('attendance', 'studentscanmark');
 

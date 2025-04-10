@@ -97,10 +97,11 @@ class updatesession extends \moodleform {
         }
         $mform->addElement('static', 'sessiontypedescription', get_string('sessiontype', 'attendance'), $strtype);
 
-        $olddate = construct_session_full_date_time($sess->sessdate, $sess->duration);
-        $mform->addElement('static', 'olddate', get_string('olddate', 'attendance'), $olddate);
-
-        attendance_form_sessiondate_selector($mform);
+        // Add theoretical time field
+        $mform->addElement('text', 'theoretical_time', get_string('theoreticaltime', 'attendance'));
+        $mform->setType('theoretical_time', PARAM_INT);
+        $mform->addRule('theoretical_time', get_string('required'), 'required');
+        $mform->setDefault('theoretical_time', $sess->theoretical_time);
 
         // Show which status set is in use.
         $maxstatusset = attendance_get_max_statusset($this->_customdata['att']->id);

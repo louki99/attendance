@@ -71,6 +71,9 @@ switch ($att->pageparams->action) {
         }
 
         if ($formdata = $mform->get_data()) {
+            debugging('Course ID in sessions.php: ' . $course->id);
+            debugging('Form data in sessions.php: ' . print_r($formdata, true));
+            
             $sessions = attendance_construct_sessions_data_for_add($formdata, $att);
             $att->add_sessions($sessions);
             // Save custom fields.

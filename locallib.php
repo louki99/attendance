@@ -781,6 +781,9 @@ function attendance_exporttocsv($data, $filename) {
 function attendance_construct_sessions_data_for_add($formdata, mod_attendance_structure $att) {
     global $CFG;
 
+    debugging('Course ID: ' . $att->course->id);
+    debugging('Form data: ' . print_r($formdata, true));
+
     $sesstarttime = $formdata->sestime['starthour'] * HOURSECS + $formdata->sestime['startminute'] * MINSECS;
     $sesendtime = $formdata->sestime['endhour'] * HOURSECS + $formdata->sestime['endminute'] * MINSECS;
     $sessiondate = $formdata->sessiondate + $sesstarttime;
@@ -848,6 +851,7 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
                     $sess->automark = !empty($formdata->automark) ? $formdata->automark : 0;
                     $sess->automarkcmid = !empty($formdata->automarkcmid) ? $formdata->automarkcmid : 0;
                     $sess->automarkcompleted = 0;
+                    $sess->theoretical_time = $formdata->theoretical_time;
 
                     if (!empty($formdata->usedefaultsubnet)) {
                         $sess->subnet = $att->subnet;
@@ -913,95 +917,28 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
             }
         }
     } else {
-        $sess = new stdClass();
-        $sess->sessdate = $sessiondate;
-        $sess->duration = $duration;
-        $sess->descriptionitemid = $formdata->sdescription['itemid'];
-        $sess->description = $formdata->sdescription['text'];
-        $sess->descriptionformat = $formdata->sdescription['format'];
-        $sess->calendarevent = $calendarevent;
-        $sess->timemodified = $now;
-        $sess->studentscanmark = 0;
-        $sess->allowupdatestatus = 0;
-        $sess->autoassignstatus = 0;
-        $sess->subnet = '';
-        $sess->studentpassword = '';
-        $sess->automark = 0;
-        $sess->automarkcompleted = 0;
-
-        if (!empty($formdata->automarkcmid)) {
-            $sess->automarkcmid = $formdata->automarkcmid;
+        $session = new stdClass();
+        $session->attendanceid = $att->id;
+        $session->groupid = 0;
+        $session->sessdate = $sessiondate;
+        $session->duration = $duration;
+        
+        // Set description from form data
+        if (isset($formdata->sdescription)) {
+            $session->sdescription = $formdata->sdescription;
+            $session->description = $formdata->sdescription['text'];
+            $session->descriptionformat = $formdata->sdescription['format'];
         } else {
-            $sess->automarkcmid = 0;
+            $session->description = '';
+            $session->descriptionformat = FORMAT_HTML;
         }
-
-        $sess->absenteereport = $absenteereport;
-        $sess->includeqrcode = 0;
-        $sess->rotateqrcode = 0;
-        $sess->rotateqrcodesecret = '';
-
-        if (!empty($formdata->usedefaultsubnet)) {
-            $sess->subnet = $att->subnet;
-        } else {
-            $sess->subnet = $formdata->subnet;
-        }
-
-        if (!empty($formdata->automark)) {
-            $sess->automark = $formdata->automark;
-        }
-        if (!empty($formdata->automark)) {
-            $sess->automark = $formdata->automark;
-        }
-        if (!empty($formdata->preventsharedip)) {
-            $sess->preventsharedip = $formdata->preventsharedip;
-        }
-        if (!empty($formdata->preventsharediptime)) {
-            $sess->preventsharediptime = $formdata->preventsharediptime;
-        }
-
-        if (isset($formdata->studentscanmark) && !empty($formdata->studentscanmark)) {
-            // Students will be able to mark their own attendance.
-            $sess->studentscanmark = 1;
-            if (!empty($formdata->allowupdatestatus)) {
-                $sess->allowupdatestatus = $formdata->allowupdatestatus;
-            } else {
-                $sess->allowupdatestatus = 0;
-            }
-            if (isset($formdata->autoassignstatus) && !empty($formdata->autoassignstatus)) {
-                $sess->autoassignstatus = 1;
-            }
-            if (!empty($formdata->randompassword)) {
-                $sess->studentpassword = attendance_random_string();
-            } else if (!empty($formdata->studentpassword)) {
-                $sess->studentpassword = $formdata->studentpassword;
-            }
-            if (!empty($formdata->includeqrcode)) {
-                $sess->includeqrcode = $formdata->includeqrcode;
-            }
-            if (!empty($formdata->rotateqrcode)) {
-                $sess->rotateqrcode = $formdata->rotateqrcode;
-                $sess->studentpassword = attendance_random_string();
-                $sess->rotateqrcodesecret = attendance_random_string();
-            }
-            if (!empty($formdata->usedefaultsubnet)) {
-                $sess->subnet = $att->subnet;
-            } else {
-                $sess->subnet = $formdata->subnet;
-            }
-
-            if (!empty($formdata->automark)) {
-                $sess->automark = $formdata->automark;
-            }
-            if (!empty($formdata->preventsharedip)) {
-                $sess->preventsharedip = $formdata->preventsharedip;
-            }
-            if (!empty($formdata->studentsearlyopentime)) {
-                $sess->studentsearlyopentime = $formdata->studentsearlyopentime;
-            }
-        }
-        $sess->statusset = $formdata->statusset;
-
-        attendance_fill_groupid($formdata, $sessions, $sess);
+        
+        $session->calendarevent = $calendarevent;
+        $session->absenteereport = $absenteereport;
+        $session->studentscanmark = $formdata->studentscanmark;
+        $session->allowupdatestatus = $formdata->allowupdatestatus;
+        $session->theoretical_time = $formdata->theoretical_time;
+        $sessions[] = $session;
     }
 
     return $sessions;
