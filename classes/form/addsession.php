@@ -351,18 +351,29 @@ class addsession extends moodleform {
         global $DB;
         $errors = parent::validation($data, $files);
 
-        $sesstarttime = $data['sestime']['starthour'] * HOURSECS + $data['sestime']['startminute'] * MINSECS;
-        $sesendtime = $data['sestime']['endhour'] * HOURSECS + $data['sestime']['endminute'] * MINSECS;
-        if ($sesendtime < $sesstarttime) {
-            $errors['sestime'] = get_string('invalidsessionendtime', 'attendance');
+        // Check if sestime exists and has required keys
+        if (isset($data['sestime']) && is_array($data['sestime'])) {
+            $sesstarttime = isset($data['sestime']['starthour']) ? $data['sestime']['starthour'] * HOURSECS : 0;
+            $sesstarttime += isset($data['sestime']['startminute']) ? $data['sestime']['startminute'] * MINSECS : 0;
+            
+            $sesendtime = isset($data['sestime']['endhour']) ? $data['sestime']['endhour'] * HOURSECS : 0;
+            $sesendtime += isset($data['sestime']['endminute']) ? $data['sestime']['endminute'] * MINSECS : 0;
+            
+            if ($sesendtime < $sesstarttime) {
+                $errors['sestime'] = get_string('invalidsessionendtime', 'attendance');
+            }
         }
 
-        if (!empty($data['addmultiply']) && $data['sessiondate'] != 0 && $data['sessionenddate'] != 0 &&
-                $data['sessionenddate'] < $data['sessiondate']) {
-            $errors['sessionenddate'] = get_string('invalidsessionenddate', 'attendance');
+        // Check if sessiondate and sessionenddate exist
+        if (isset($data['sessiondate']) && isset($data['sessionenddate'])) {
+            if (!empty($data['addmultiply']) && $data['sessiondate'] != 0 && $data['sessionenddate'] != 0 &&
+                    $data['sessionenddate'] < $data['sessiondate']) {
+                $errors['sessionenddate'] = get_string('invalidsessionenddate', 'attendance');
+            }
         }
 
-        if ($data['sessiontype'] == mod_attendance_structure::SESSION_GROUP && empty($data['groups'])) {
+        if (isset($data['sessiontype']) && $data['sessiontype'] == mod_attendance_structure::SESSION_GROUP && 
+            (empty($data['groups']) || !isset($data['groups']))) {
             $errors['groups'] = get_string('errorgroupsnotselected', 'attendance');
         }
 
@@ -371,25 +382,35 @@ class addsession extends moodleform {
             $data['sdays'] = [];
             $errors['sdays'] = get_string('required', 'attendance');
         }
-        if (isset($data['sdays'])) {
-            if (!$this->checkweekdays($data['sessiondate'], $data['sessionenddate'], $data['sdays']) ) {
+
+        if (isset($data['sdays']) && isset($data['sessiondate']) && isset($data['sessionenddate'])) {
+            if (!$this->checkweekdays($data['sessiondate'], $data['sessionenddate'], $data['sdays'])) {
                 $errors['sdays'] = get_string('checkweekdays', 'attendance');
             }
         }
-        if (($addmulti != 0) && ceil(($data['sessionenddate'] - $data['sessiondate']) / YEARSECS) > 1) {
-            $errors['sessionenddate'] = get_string('timeahead', 'attendance');
+
+        if ($addmulti && isset($data['sessiondate']) && isset($data['sessionenddate'])) {
+            $startdate = usergetmidnight($data['sessiondate']);
+            $enddate = usergetmidnight($data['sessionenddate']);
+            $diffyears = ceil(($enddate - $startdate) / YEARSECS);
+            if ($diffyears > 1) {
+                $errors['sessionenddate'] = get_string('timeahead', 'attendance');
+            }
         }
-        $sessstart = $data['sessiondate'] + $sesstarttime;
-        if ($sessstart < $data['coursestartdate'] && $sessstart != $data['previoussessiondate']) {
-            $errors['sessiondate'] = get_string('priorto', 'attendance',
-                userdate($data['coursestartdate'], get_string('strftimedmyhm', 'attendance')));
-            $this->_form->setConstant('previoussessiondate', $sessstart);
+
+        if (isset($data['sessiondate']) && isset($data['coursestartdate'])) {
+            $sessstart = $data['sessiondate'] + (isset($sesstarttime) ? $sesstarttime : 0);
+            if ($sessstart < $data['coursestartdate'] && $sessstart != $data['previoussessiondate']) {
+                $errors['sessiondate'] = get_string('priorto', 'attendance',
+                    userdate($data['coursestartdate'], get_string('strftimedmyhm', 'attendance')));
+                $this->_form->setConstant('previoussessiondate', $sessstart);
+            }
         }
 
         if (!empty($data['studentscanmark']) && isset($data['automark'])
             && $data['automark'] == ATTENDANCE_AUTOMARK_CLOSE) {
 
-            $cm            = $this->_customdata['cm'];
+            $cm = $this->_customdata['cm'];
             // Check that the selected statusset has a status to use when unmarked.
             $sql = 'SELECT id
             FROM {attendance_statuses}
@@ -401,27 +422,10 @@ class addsession extends moodleform {
             }
         }
 
-        if (!empty($data['studentscanmark']) && $data['preventsharedip'] == ATTENDANCE_SHAREDIP_MINUTES &&
-                empty($data['preventsharediptime'])) {
+        if (!empty($data['studentscanmark']) && isset($data['preventsharedip']) && 
+            $data['preventsharedip'] == ATTENDANCE_SHAREDIP_MINUTES &&
+            empty($data['preventsharediptime'])) {
             $errors['preventsharedgroup'] = get_string('iptimemissing', 'attendance');
-
-        }
-
-        // Get the course's theoretical time limit from custom field
-        $courseid = $this->_customdata['course']->id;
-        debugging('Course ID: ' . $courseid);
-        $customfieldshortname = get_config('attendance', 'customfield_shortname');
-        $coursefield = $DB->get_record('customfield_data', array('instanceid' => $courseid, 'fieldid' => 
-                       $DB->get_field('customfield_field', 'id', array('shortname' => $customfieldshortname))));
-
-        debugging('Course field: ' . print_r($coursefield, true));
-
-        if ($coursefield) {
-            $coursethetime = $coursefield->value;
-            debugging('Course time louki: ' . $coursethetime);
-            if ($data['theoretical_time'] > $coursethetime) {
-                $errors['theoretical_time'] = get_string('theoretical_time_exceeded', 'attendance', $coursethetime);
-            }
         }
 
         return $errors;
