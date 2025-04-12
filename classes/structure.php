@@ -777,16 +777,6 @@ class mod_attendance_structure {
         debugging('Session ID: ' . $this->pageparams->sessionid);
         debugging('Session theoretical time: ' . $theoreticaltime);
 
-        // Get the status ID for "Absent" for this specific attendance instance
-        $absentstatus = $DB->get_record('attendance_statuses', 
-            ['attendanceid' => $this->id, 'acronym' => 'A'], 'id');
-        $absentstatusid = $absentstatus ? $absentstatus->id : null;
-        debugging('Absent status ID for attendance ' . $this->id . ': ' . ($absentstatusid ?? 'not found'));
-
-        if ($theoreticaltime === null) {
-            debugging('Warning: No theoretical time value found for session');
-        }
-
         foreach ($formdata as $key => $value) {
             // Look at Remarks field because the user options may not be passed if empty.
             if (substr($key, 0, 7) == 'remarks') {
@@ -800,15 +790,14 @@ class mod_attendance_structure {
                 if (array_key_exists('user' . $sid, $formdata) && is_numeric($formdata['user' . $sid])) {
                     $sesslog[$sid]->statusid = $formdata['user' . $sid];
                     
-                    // Check if the student is marked as Absent
-                    if ($absentstatusid && $formdata['user' . $sid] == $absentstatusid) {
-                        $sesslog[$sid]->theoretical_time = 0;
-                        debugging('Student ' . $sid . ' marked as Absent, setting theoretical_time to 0');
-                    } else if ($theoreticaltime !== null) {
+                    // Get the status record to check the grade
+                    $status = $DB->get_record('attendance_statuses', ['id' => $formdata['user' . $sid]], 'grade');
+                    if ($status && $status->grade > 0) {
                         $sesslog[$sid]->theoretical_time = $theoreticaltime;
-                        debugging('Setting theoretical_time for student ' . $sid . ': ' . $theoreticaltime);
+                        debugging('Student ' . $sid . ' has grade > 0, setting theoretical_time to ' . $theoreticaltime);
                     } else {
-                        debugging('Warning: theoretical_time is null for student ' . $sid);
+                        $sesslog[$sid]->theoretical_time = 0;
+                        debugging('Student ' . $sid . ' has grade = 0, setting theoretical_time to 0');
                     }
                 }
                 $sesslog[$sid]->statusset = $statuses;
