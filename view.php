@@ -48,6 +48,22 @@ require_capability('mod/attendance:view', $context);
 $pageparams->init($cm);
 $att = new mod_attendance_structure($attendance, $cm, $course, $context, $pageparams);
 
+// Filter sessions by assigned teacher if user has teacher role
+if (has_capability('mod/attendance:manageattendances', $context)) {
+    $teacherid = $USER->id;
+    $sessions = $DB->get_records_sql("
+        SELECT s.* 
+        FROM {attendance_sessions} s
+        JOIN {attendance_session_teachers} st ON s.id = st.sessionid
+        WHERE st.teacherid = :teacherid
+        AND s.attendanceid = :attendanceid
+        ORDER BY s.sessdate ASC
+    ", ['teacherid' => $teacherid, 'attendanceid' => $attendance->id]);
+    
+    // Override the sessions in the attendance structure
+    $att->sessions = $sessions;
+}
+
 // Not specified studentid for displaying attendance?
 // Redirect to appropriate page if can.
 if (!$pageparams->studentid) {

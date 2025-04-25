@@ -28,44 +28,61 @@
     <TABLE NAME="attendance_sessions" COMMENT="attendance_sessions table">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="attendanceid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="sessdate" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="duration" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="lasttaken" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="lasttakenby" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="description" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="descriptionformat" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="studentscanmark" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="allowupdatestatus" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Allow student to update the status they have stored earlier."/>
-        <FIELD NAME="studentsearlyopentime" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time to allow for early opening of session for student marking."/>
-        <FIELD NAME="autoassignstatus" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="studentpassword" TYPE="char" LENGTH="50" NOTNULL="false" DEFAULT="" SEQUENCE="false"/>
-        <FIELD NAME="subnet" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Restrict ability for students to mark by subnet."/>
-        <FIELD NAME="automark" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="automarkcompleted" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="statusset" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Which set of statuses to use"/>
-        <FIELD NAME="absenteereport" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
-        <FIELD NAME="preventsharedip" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="preventsharediptime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="caleventid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="calendarevent" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
-        <FIELD NAME="includeqrcode" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Include a QR code image when displaying the password"/>
-        <FIELD NAME="rotateqrcode" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="rotateqrcodesecret" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
-        <FIELD NAME="automarkcmid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
-        <FIELD NAME="theoretical_time" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Theoretical time in minutes for this session"/>
+        <FIELD NAME="attendanceid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="groupid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="group id, 0 means that session for all"/>
+        <FIELD NAME="sessdate" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="session date"/>
+        <FIELD NAME="duration" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="session duration in seconds"/>
+        <FIELD NAME="lasttaken" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="last time attendance was taken"/>
+        <FIELD NAME="lasttakenby" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="id of the last user who took attendance"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="time modified"/>
+        <FIELD NAME="statusset" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="status set of session"/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="session description"/>
+        <FIELD NAME="descriptionformat" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="description format"/>
+        <FIELD NAME="studentscanmark" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="students can mark their own attendance"/>
+        <FIELD NAME="requirepassword" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="require password"/>
+        <FIELD NAME="studentpassword" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="student password"/>
+        <FIELD NAME="randompassword" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="random password"/>
+        <FIELD NAME="automark" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="automatically mark attendance"/>
+        <FIELD NAME="automarkcompleted" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="automark completed"/>
+        <FIELD NAME="subnet" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="subnet"/>
+        <FIELD NAME="automarkcmid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="course module id for automarking"/>
+        <FIELD NAME="studentsearlyopentime" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="students can mark their attendance early"/>
+        <FIELD NAME="absenteereport" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="include in absentee report"/>
+        <FIELD NAME="includeqrcode" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="include QR code"/>
+        <FIELD NAME="calendarevent" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="create calendar event"/>
+        <FIELD NAME="allowupdatestatus" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="allow students to update their status"/>
+        <FIELD NAME="autoassignstatus" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="automatically assign status"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for attendance_sessions"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="attendanceid" TYPE="foreign" FIELDS="attendanceid" REFTABLE="attendance" REFFIELDS="id"/>
+        <KEY NAME="groupid" TYPE="foreign" FIELDS="groupid" REFTABLE="groups" REFFIELDS="id"/>
+        <KEY NAME="lasttakenby" TYPE="foreign" FIELDS="lasttakenby" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
-      <INDEXES>
-        <INDEX NAME="attendanceid" UNIQUE="false" FIELDS="attendanceid"/>
-        <INDEX NAME="groupid" UNIQUE="false" FIELDS="groupid"/>
-        <INDEX NAME="sessdate" UNIQUE="false" FIELDS="sessdate"/>
-        <INDEX NAME="caleventid" UNIQUE="false" FIELDS="caleventid"/>
-      </INDEXES>
+    </TABLE>
+    <TABLE NAME="attendance_session_students">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="sessionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="studentid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="sessionid" TYPE="foreign" FIELDS="sessionid" REFTABLE="attendance_sessions" REFFIELDS="id"/>
+        <KEY NAME="studentid" TYPE="foreign" FIELDS="studentid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="attendance_session_teachers">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="sessionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="teacherid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="sessionid" TYPE="foreign" FIELDS="sessionid" REFTABLE="attendance_sessions" REFFIELDS="id"/>
+        <KEY NAME="teacherid" TYPE="foreign" FIELDS="teacherid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
     </TABLE>
     <TABLE NAME="attendance_log" COMMENT="attendance_log table retrofitted from MySQL">
       <FIELDS>

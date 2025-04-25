@@ -76,9 +76,29 @@ switch ($att->pageparams->action) {
             
             $sessions = attendance_construct_sessions_data_for_add($formdata, $att);
             $att->add_sessions($sessions);
-            // Save custom fields.
+            
+            // Save student and teacher assignments for each session
             foreach ($sessions as $session) {
+                // Save custom fields
                 $att->save_customfields($session->id, $formdata);
+                
+                // Save student assignments
+                if (!empty($formdata->students)) {
+                    foreach ($formdata->students as $studentid) {
+                        $record = new stdClass();
+                        $record->sessionid = $session->id;
+                        $record->studentid = $studentid;
+                        $DB->insert_record('attendance_session_students', $record);
+                    }
+                }
+                
+                // Save teacher assignment
+                if (!empty($formdata->teacher)) {
+                    $record = new stdClass();
+                    $record->sessionid = $session->id;
+                    $record->teacherid = $formdata->teacher;
+                    $DB->insert_record('attendance_session_teachers', $record);
+                }
             }
 
             if (count($sessions) == 1) {

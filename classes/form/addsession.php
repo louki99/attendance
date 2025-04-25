@@ -55,6 +55,25 @@ class addsession extends moodleform {
 
         $mform->addElement('header', 'general', get_string('addsession', 'attendance'));
 
+        // Add student selection
+        $students = get_enrolled_users($modcontext, 'mod/attendance:canbelisted', 0, 'u.id, u.firstname, u.lastname', 'u.lastname, u.firstname');
+        $studentoptions = [];
+        foreach ($students as $student) {
+            $studentoptions[$student->id] = fullname($student);
+        }
+        $mform->addElement('select', 'students', get_string('selectstudents', 'attendance'), $studentoptions);
+        $mform->getElement('students')->setMultiple(true);
+        $mform->addHelpButton('students', 'selectstudents', 'attendance');
+
+        // Add teacher selection
+        $teachers = get_enrolled_users($modcontext, 'mod/attendance:manageattendances', 0, 'u.id, u.firstname, u.lastname', 'u.lastname, u.firstname');
+        $teacheroptions = [];
+        foreach ($teachers as $teacher) {
+            $teacheroptions[$teacher->id] = fullname($teacher);
+        }
+        $mform->addElement('select', 'teacher', get_string('selectteacher', 'attendance'), $teacheroptions);
+        $mform->addHelpButton('teacher', 'selectteacher', 'attendance');
+
         // Add date and time selectors
         $mform->addElement('date_time_selector', 'sessdate', get_string('sessiondate', 'attendance'));
         $mform->setType('sessdate', PARAM_INT);

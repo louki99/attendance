@@ -688,3 +688,7 @@ $string['weekcommencing'] = 'Week commencing';
 $string['weeks'] = 'Weeks';
 $string['youcantdo'] = 'You can\'t do anything';
 $string['nousers'] = 'No enrolled users found to take attendance for.';
+$string['selectstudents'] = 'Select Students';
+$string['selectteacher'] = 'Select Teacher';
+$string['selectstudents_help'] = 'Select the students who can manage presence for this session';
+$string['selectteacher_help'] = 'Select the teacher who will follow students in this session';

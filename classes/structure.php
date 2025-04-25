@@ -1325,8 +1325,19 @@ class mod_attendance_structure {
         }
 
         list($sql, $params) = $DB->get_in_or_equal($sessionsids);
+        
+        // Delete attendance logs
         $DB->delete_records_select('attendance_log', "sessionid $sql", $params);
+        
+        // Delete session students
+        $DB->delete_records_select('attendance_session_students', "sessionid $sql", $params);
+        
+        // Delete session teachers
+        $DB->delete_records_select('attendance_session_teachers', "sessionid $sql", $params);
+        
+        // Delete the sessions
         $DB->delete_records_list('attendance_sessions', 'id', $sessionsids);
+        
         $event = \mod_attendance\event\session_deleted::create([
             'objectid' => $this->id,
             'context' => $this->context,

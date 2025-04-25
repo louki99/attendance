@@ -66,11 +66,8 @@ class take_data implements renderable {
      * @param mod_attendance_structure $att
      */
     public function __construct(mod_attendance_structure $att) {
-        if ($att->pageparams->grouptype) {
-            $this->users = $att->get_users($att->pageparams->grouptype, $att->pageparams->page);
-        } else {
-            $this->users = $att->get_users($att->pageparams->group, $att->pageparams->page);
-        }
+        // Use the filtered list of users from the attendance structure
+        $this->users = $att->users;
 
         $this->pageparams = $att->pageparams;
 
