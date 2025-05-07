@@ -35,6 +35,7 @@ $pageparams->group      = optional_param('group', null, PARAM_INT);
 $pageparams->sort       = optional_param('sort', ATT_SORT_DEFAULT, PARAM_INT);
 $pageparams->page       = optional_param('page', 1, PARAM_INT);
 $pageparams->perpage    = get_config('attendance', 'resultsperpage');
+$sessionid              = optional_param('sessionid', null, PARAM_INT);
 
 $cm             = get_coursemodule_from_id('attendance', $id, 0, false, MUST_EXIST);
 $course         = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
@@ -63,6 +64,20 @@ $pageparams->showsessiondetails = optional_param('showsessiondetails', $attrecor
 $pageparams->sessiondetailspos = optional_param('sessiondetailspos', $attrecord->sessiondetailspos, PARAM_TEXT);
 
 $att = new mod_attendance_structure($attrecord, $cm, $course, $context, $pageparams);
+
+// If sessionid is provided, get only students assigned to that session
+if ($sessionid) {
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
+    
+    $sql = "SELECT DISTINCT $userfields
+              FROM {attendance_session_students} ass
+              JOIN {user} u ON u.id = ass.studentid
+             WHERE ass.sessionid = :sessionid
+          ORDER BY u.lastname, u.firstname";
+    
+    $att->users = $DB->get_records_sql($sql, ['sessionid' => $sessionid]);
+}
 
 $PAGE->set_url($att->url_report());
 $PAGE->set_pagelayout('report');

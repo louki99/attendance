@@ -195,21 +195,42 @@ class mod_attendance_structure {
      * @return array of records or an empty array
      */
     public function get_today_sessions(): array {
-        global $DB;
+        global $DB, $USER;
 
         $start = usergetmidnight(time());
         $end = $start + DAYSECS;
 
-        $sql = "SELECT *
-                  FROM {attendance_sessions}
-                 WHERE sessdate >= :start AND sessdate < :end
-                   AND attendanceid = :aid";
-        $params = [
-            'start' => $start,
-            'end'   => $end,
-            'aid'   => $this->id, ];
-
-        return $DB->get_records_sql($sql, $params);
+        // Check if current user is a monitor
+        $ismonitor = false;
+        $sql = "SELECT uid.data FROM {user_info_data} uid 
+                JOIN {user_info_field} uif ON uid.fieldid = uif.id 
+                WHERE uid.userid = :userid AND uif.shortname = 'role_plateforme' AND uid.data = 'moniteur'";
+        $ismonitor = $DB->record_exists_sql($sql, ['userid' => $USER->id]);
+        
+        if ($ismonitor) {
+            // Only show sessions the monitor is assigned to
+            $sql = "SELECT s.* FROM {attendance_sessions} s 
+                    JOIN {attendance_session_teachers} t ON s.id = t.sessionid
+                    WHERE s.sessdate >= :start AND s.sessdate < :end
+                        AND s.attendanceid = :aid AND t.teacherid = :teacherid";
+            $params = [
+                'start' => $start,
+                'end'   => $end,
+                'aid'   => $this->id,
+                'teacherid' => $USER->id ];
+            return $DB->get_records_sql($sql, $params);
+        } else {
+            // Normal behavior for admins and others
+            $sql = "SELECT *
+                    FROM {attendance_sessions}
+                    WHERE sessdate >= :start AND sessdate < :end
+                    AND attendanceid = :aid";
+            $params = [
+                'start' => $start,
+                'end'   => $end,
+                'aid'   => $this->id ];
+            return $DB->get_records_sql($sql, $params);
+        }
     }
 
     /**
@@ -280,7 +301,7 @@ class mod_attendance_structure {
      * @return array
      */
     public function get_filtered_sessions(): array {
-        global $DB;
+        global $DB, $USER;
 
         if ($this->pageparams->startdate && $this->pageparams->enddate) {
             $where = "attendanceid = :aid AND sessdate >= :sdate AND sessdate < :edate";
@@ -298,7 +319,28 @@ class mod_attendance_structure {
             'sdate'     => $this->pageparams->startdate,
             'edate'     => $this->pageparams->enddate,
             'cgroup'    => $this->pageparams->get_current_sesstype(), ];
-        $sessions = $DB->get_records_select('attendance_sessions', $where, $params, 'sessdate asc');
+        
+        // Check if current user is a monitor, if so, only show sessions they are assigned to
+        $ismonitor = false;
+        $sql = "SELECT uid.data FROM {user_info_data} uid 
+                JOIN {user_info_field} uif ON uid.fieldid = uif.id 
+                WHERE uid.userid = :userid AND uif.shortname = 'role_plateforme' AND uid.data = 'moniteur'";
+        $ismonitor = $DB->record_exists_sql($sql, ['userid' => $USER->id]);
+        
+        if ($ismonitor) {
+            // Get sessions from attendance_sessions table with join to attendance_session_teachers
+            $sessions = [];
+            $sql = "SELECT s.* FROM {attendance_sessions} s 
+                    JOIN {attendance_session_teachers} t ON s.id = t.sessionid
+                    WHERE s.$where AND t.teacherid = :teacherid
+                    ORDER BY s.sessdate ASC";
+            $params['teacherid'] = $USER->id;
+            $sessions = $DB->get_records_sql($sql, $params);
+        } else {
+            // Normal behavior for admins and others - get all sessions
+            $sessions = $DB->get_records_select('attendance_sessions', $where, $params, 'sessdate asc');
+        }
+        
         $statussetmaxpoints = attendance_get_statusset_maxpoints($this->get_statuses(true, true));
         foreach ($sessions as $sess) {
             if (empty($sess->description)) {
@@ -521,8 +563,6 @@ class mod_attendance_structure {
         }
 
         // Set required fields before insert
-        $sess->description = '';  // Initialize empty description
-        $sess->descriptionformat = FORMAT_HTML;  // Set default format
         $sess->lasttaken = 0;
         $sess->lasttakenby = 0;
         $sess->studentscanmark = !isset($sess->studentscanmark) ? 0 : $sess->studentscanmark;
@@ -543,10 +583,21 @@ class mod_attendance_structure {
         $sess->absenteereport = !isset($sess->absenteereport) ? 1 : $sess->absenteereport;
         $sess->groupid = !isset($sess->groupid) ? 0 : $sess->groupid;
 
+        // Ensure description is set properly before insert
+        if (!isset($sess->description) || empty($sess->description)) {
+            if (isset($sess->sdescription) && is_array($sess->sdescription) && !empty($sess->sdescription['text'])) {
+                $sess->description = $sess->sdescription['text'];
+                $sess->descriptionformat = $sess->sdescription['format'];
+            } else {
+                $sess->description = '';
+                $sess->descriptionformat = FORMAT_HTML;
+            }
+        }
+
         $sess->id = $DB->insert_record('attendance_sessions', $sess);
         
         // Handle description from form data if it exists
-        if (isset($sess->sdescription)) {
+        if (isset($sess->sdescription) && is_array($sess->sdescription)) {
             $description = file_save_draft_area_files($sess->sdescription['itemid'],
                 $this->context->id, 'mod_attendance', 'session', $sess->id,
                 ['subdirs' => false, 'maxfiles' => -1, 'maxbytes' => 0], $sess->sdescription['text']);
@@ -594,11 +645,26 @@ class mod_attendance_structure {
 
         // Handle the description from the editor
         if (isset($formdata->sdescription)) {
-            $description = file_save_draft_area_files($formdata->sdescription['itemid'],
-                $this->context->id, 'mod_attendance', 'session', $sessionid,
-                ['subdirs' => false, 'maxfiles' => -1, 'maxbytes' => 0], $formdata->sdescription['text']);
-            $sess->description = $description;
-            $sess->descriptionformat = $formdata->sdescription['format'];
+            $editoroptions = [
+                'maxfiles' => EDITOR_UNLIMITED_FILES,
+                'noclean' => true,
+                'context' => $this->context
+            ];
+            $descdata = file_postupdate_standard_editor(
+                (object)[
+                    'description' => $formdata->sdescription['text'],
+                    'descriptionformat' => $formdata->sdescription['format'],
+                    'description_editor' => $formdata->sdescription
+                ],
+                'description',
+                $editoroptions,
+                $this->context,
+                'mod_attendance',
+                'session',
+                $sessionid
+            );
+            $sess->description = $descdata->description;
+            $sess->descriptionformat = $descdata->descriptionformat;
         }
         $sess->calendarevent = empty($formdata->calendarevent) ? 0 : $formdata->calendarevent;
 

@@ -53,8 +53,23 @@ class manage_data implements renderable {
      * @param mod_attendance_structure $att instance
      */
     public function __construct(mod_attendance_structure $att) {
+        global $DB;
 
         $this->sessions = $att->get_filtered_sessions();
+
+        // Get student counts and teacher info for each session
+        foreach ($this->sessions as $session) {
+            // Get student count
+            $session->studentcount = $DB->count_records('attendance_session_students', ['sessionid' => $session->id]);
+            
+            // Get teacher info
+            $teacher = $DB->get_record_sql("SELECT u.id, u.firstname, u.lastname 
+                                           FROM {attendance_session_teachers} ast 
+                                           JOIN {user} u ON u.id = ast.teacherid 
+                                           WHERE ast.sessionid = :sessionid", 
+                                           ['sessionid' => $session->id]);
+            $session->teachername = $teacher ? fullname($teacher) : '-';
+        }
 
         $this->groups = groups_get_all_groups($att->course->id);
 

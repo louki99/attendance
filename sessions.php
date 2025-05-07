@@ -61,6 +61,32 @@ $PAGE->set_cacheable(true);
 $PAGE->navbar->add($att->name);
 
 $formparams = ['course' => $course, 'cm' => $cm, 'modcontext' => $context, 'att' => $att];
+// Filter teachers with role_plateforme = 'moniteur'.
+$moniteur_teachers = [];
+$sql = "SELECT u.id, u.firstname, u.lastname FROM {user} u
+        JOIN {user_info_data} uid ON uid.userid = u.id
+        JOIN {user_info_field} uif ON uid.fieldid = uif.id
+        WHERE uif.shortname = :shortname AND uid.data = :data";
+$params = ['shortname' => 'role_plateforme', 'data' => 'moniteur'];
+$teachers = $DB->get_records_sql($sql, $params);
+foreach ($teachers as $teacher) {
+    $moniteur_teachers[$teacher->id] = fullname($teacher);
+}
+$formparams['moniteur_teachers'] = $moniteur_teachers;
+
+// Filter students with role_plateforme = 'Candidat'.
+$candidat_students = [];
+$sql = "SELECT u.id, u.firstname, u.lastname FROM {user} u
+        JOIN {user_info_data} uid ON uid.userid = u.id
+        JOIN {user_info_field} uif ON uid.fieldid = uif.id
+        WHERE uif.shortname = :shortname AND uid.data = :data";
+$params = ['shortname' => 'role_plateforme', 'data' => 'Candidat'];
+$students = $DB->get_records_sql($sql, $params);
+foreach ($students as $student) {
+    $candidat_students[$student->id] = fullname($student);
+}
+$formparams['candidat_students'] = $candidat_students;
+
 switch ($att->pageparams->action) {
     case mod_attendance_sessions_page_params::ACTION_ADD:
         $url = $att->url_sessions(['action' => mod_attendance_sessions_page_params::ACTION_ADD]);

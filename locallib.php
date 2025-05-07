@@ -924,9 +924,23 @@ function attendance_construct_sessions_data_for_add($formdata, mod_attendance_st
         
         // Set description from form data
         if (isset($formdata->sdescription)) {
-            $session->sdescription = $formdata->sdescription;
-            $session->description = $formdata->sdescription['text'];
-            $session->descriptionformat = $formdata->sdescription['format'];
+            // Use the Moodle editor API to save files and get the correct text/format.
+            $editoroptions = [
+                'maxfiles' => EDITOR_UNLIMITED_FILES,
+                'noclean' => true,
+                'context' => $att->context
+            ];
+            $descdata = file_postupdate_standard_editor(
+                (object)['description' => $formdata->sdescription['text'], 'descriptionformat' => $formdata->sdescription['format'], 'description_editor' => $formdata->sdescription],
+                'description',
+                $editoroptions,
+                $att->context,
+                'mod_attendance',
+                'session',
+                null // session id not known yet
+            );
+            $session->description = $descdata->description;
+            $session->descriptionformat = $descdata->descriptionformat;
         } else {
             $session->description = '';
             $session->descriptionformat = FORMAT_HTML;

@@ -324,10 +324,12 @@ class renderer extends plugin_renderer_base {
                 get_string('sessiontypeshort', 'attendance'),
                 get_string('description', 'attendance'),
                 get_string('date', 'attendance'),
-                get_string('theoreticaltime', 'attendance')
+                get_string('theoreticaltime', 'attendance'),
+                get_string('students', 'attendance'),
+                get_string('teacher', 'attendance')
         ];
-        $table->align = ['center', 'left', 'left', 'left', 'left'];
-        $table->size = ['1px', '200px', '300px', '200px','*'];
+        $table->align = ['center', 'left', 'left', 'left', 'left', 'center', 'left'];
+        $table->size = ['1px', '200px', '300px', '200px', '*', '100px', '150px'];
 
         // Add custom fields.
         $customfields = [];
@@ -373,6 +375,12 @@ class renderer extends plugin_renderer_base {
 
             // Show theoretical time
             $table->data[$sess->id][] = !empty($sess->theoretical_time) ? $sess->theoretical_time . ' ' . get_string('minutes', 'attendance') : '-';
+
+            // Show student count
+            $table->data[$sess->id][] = $sess->studentcount;
+
+            // Show teacher name
+            $table->data[$sess->id][] = $sess->teachername;
            
             // Add custom fields data
             foreach ($customfields as $field) {
