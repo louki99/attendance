@@ -61,27 +61,53 @@ $PAGE->set_cacheable(true);
 $PAGE->navbar->add($att->name);
 
 $formparams = ['course' => $course, 'cm' => $cm, 'modcontext' => $context, 'att' => $att];
-// Filter teachers with role_plateforme = 'moniteur'.
+// Filter teachers with role_plateforme = 'moniteur' who are enrolled in this course.
 $moniteur_teachers = [];
-$sql = "SELECT u.id, u.firstname, u.lastname FROM {user} u
+
+// Use SQL query that's proven to work in the database
+$sql = "SELECT u.id, u.firstname, u.lastname, uid.data as role
+        FROM {user} u
+        JOIN {user_enrolments} ue ON ue.userid = u.id
+        JOIN {enrol} e ON e.id = ue.enrolid
         JOIN {user_info_data} uid ON uid.userid = u.id
         JOIN {user_info_field} uif ON uid.fieldid = uif.id
-        WHERE uif.shortname = :shortname AND uid.data = :data";
-$params = ['shortname' => 'role_plateforme', 'data' => 'moniteur'];
+        WHERE uif.shortname = 'role_plateforme'
+        AND uid.data = 'Moniteur'
+        AND e.courseid = :courseid
+        AND e.status = 0
+        AND ue.status = 0
+        ORDER BY u.lastname, u.firstname";
+
+$params = ['courseid' => $course->id];
 $teachers = $DB->get_records_sql($sql, $params);
+debugging('Found teachers: ' . count($teachers) . ' - Details: ' . print_r($teachers, true));
+
 foreach ($teachers as $teacher) {
     $moniteur_teachers[$teacher->id] = fullname($teacher);
 }
 $formparams['moniteur_teachers'] = $moniteur_teachers;
 
-// Filter students with role_plateforme = 'Candidat'.
+// Filter students with role_plateforme = 'Candidat' who are enrolled in this course.
 $candidat_students = [];
-$sql = "SELECT u.id, u.firstname, u.lastname FROM {user} u
+
+// Use SQL query that's proven to work in the database
+$sql = "SELECT u.id, u.firstname, u.lastname, uid.data as role
+        FROM {user} u
+        JOIN {user_enrolments} ue ON ue.userid = u.id
+        JOIN {enrol} e ON e.id = ue.enrolid
         JOIN {user_info_data} uid ON uid.userid = u.id
         JOIN {user_info_field} uif ON uid.fieldid = uif.id
-        WHERE uif.shortname = :shortname AND uid.data = :data";
-$params = ['shortname' => 'role_plateforme', 'data' => 'Candidat'];
+        WHERE uif.shortname = 'role_plateforme'
+        AND uid.data = 'Candidat'
+        AND e.courseid = :courseid
+        AND e.status = 0
+        AND ue.status = 0
+        ORDER BY u.lastname, u.firstname";
+
+$params = ['courseid' => $course->id];
 $students = $DB->get_records_sql($sql, $params);
+debugging('Found students: ' . count($students) . ' - Details: ' . print_r($students, true));
+
 foreach ($students as $student) {
     $candidat_students[$student->id] = fullname($student);
 }
