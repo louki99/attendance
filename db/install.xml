@@ -52,6 +52,7 @@
         <FIELD NAME="calendarevent" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="create calendar event"/>
         <FIELD NAME="allowupdatestatus" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="allow students to update their status"/>
         <FIELD NAME="autoassignstatus" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="automatically assign status"/>
+        <FIELD NAME="caleventid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of the calendar event associated with this session"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -60,7 +61,7 @@
         <KEY NAME="lasttakenby" TYPE="foreign" FIELDS="lasttakenby" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="attendance_session_students">
+    <TABLE NAME="attendance_session_students" COMMENT="Stores student assignments for attendance sessions">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="sessionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -72,7 +73,7 @@
         <KEY NAME="studentid" TYPE="foreign" FIELDS="studentid" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="attendance_session_teachers">
+    <TABLE NAME="attendance_session_teachers" COMMENT="Stores teacher assignments for attendance sessions">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="sessionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
