@@ -847,5 +847,19 @@ function xmldb_attendance_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2024032101, 'attendance');
     }
 
+    if ($oldversion < 2024031500) {
+        // Define field caleventid to be added to attendance_sessions.
+        $table = new xmldb_table('attendance_sessions');
+        $field = new xmldb_field('caleventid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'autoassignstatus');
+
+        // Conditionally launch add field caleventid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Attendance savepoint reached.
+        upgrade_mod_savepoint(true, 2024031500, 'attendance');
+    }
+
     return true;
 }
