@@ -53,6 +53,7 @@
         <FIELD NAME="allowupdatestatus" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="allow students to update their status"/>
         <FIELD NAME="autoassignstatus" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" DEFAULT="0" COMMENT="automatically assign status"/>
         <FIELD NAME="caleventid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="ID of the calendar event associated with this session"/>
+        <FIELD NAME="theoretical_time" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Theoretical time in minutes for this session"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
