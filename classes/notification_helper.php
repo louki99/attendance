@@ -189,10 +189,10 @@ class notification_helper {
         $sessiondate = userdate($session->sessdate, get_string('strftimedatetime', 'langconfig'));
         $sessionend = userdate($session->sessdate + $session->duration, get_string('strftimedatetime', 'langconfig'));
 
-        // Get custom subject and message for students from settings (if you want to add them), else fallback to default.
+        // Get custom subject and message for students from settings
         $subject = get_config('attendance', 'new_session_notification_subject_student');
         if (empty($subject)) {
-            $subject = get_string('new_session_notification_subject', 'attendance', $course->shortname);
+            $subject = get_string('new_session_notification_subject_student', 'attendance', $course->shortname);
         } else {
             // Replace {$a} with course shortname in custom subject
             $subject = str_replace('{$a}', $course->shortname, $subject);
@@ -200,7 +200,7 @@ class notification_helper {
 
         $message = get_config('attendance', 'new_session_notification_message_student');
         if (empty($message)) {
-            $message = get_string('new_session_notification_message', 'attendance', [
+            $message = get_string('new_session_notification_message_student', 'attendance', [
                 'course' => $course->fullname,
                 'attendance' => $attendance->name,
                 'date' => $sessiondate,
@@ -226,7 +226,7 @@ class notification_helper {
         $messageobj->fullmessagehtml = $message;
         
         // Fix for smallmessage to replace {$a} with actual course shortname
-        $smallmessage = get_string('new_session_notification_small', 'attendance', $course->shortname);
+        $smallmessage = get_string('new_session_notification_small_student', 'attendance', $course->shortname);
         $messageobj->smallmessage = $smallmessage;
         
         $messageobj->notification = 1;

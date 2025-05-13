@@ -208,6 +208,17 @@ if ($ADMIN->fulltree) {
         get_string('new_session_notification_message_help', 'attendance'),
         get_string('new_session_notification_message', 'attendance'), PARAM_RAW));
 
+    // Student notification settings
+    $settings->add(new admin_setting_configtext('attendance/new_session_notification_subject_student',
+        get_string('new_session_notification_subject_student', 'attendance'),
+        get_string('new_session_notification_subject_student_help', 'attendance'),
+        get_string('new_session_notification_subject', 'attendance'), PARAM_TEXT));
+
+    $settings->add(new admin_setting_configtextarea('attendance/new_session_notification_message_student',
+        get_string('new_session_notification_message_student', 'attendance'),
+        get_string('new_session_notification_message_student_help', 'attendance'),
+        get_string('new_session_notification_message', 'attendance'), PARAM_RAW));
+
     // Session reminder settings
     $settings->add(new admin_setting_configtext('attendance/session_reminder_subject',
         get_string('session_reminder_subject', 'attendance'),
