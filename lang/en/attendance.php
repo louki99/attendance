@@ -694,3 +694,59 @@ $string['selectstudents_help'] = 'Select the candidates who can manage presence 
 $string['selectteacher_help'] = 'Select the teacher who will follow candidates in this session';
 $string['students'] = 'Candidates';
 $string['teacher'] = 'moniteur';
+
+// Notification strings
+$string['new_session_notification_subject'] = 'New attendance session created in {$a}';
+$string['new_session_notification_message'] = 'A new attendance session has been created:
+
+Course: {$a->course}
+Attendance: {$a->attendance}
+Date: {$a->date}
+End time: {$a->end}
+Description: {$a->description}';
+$string['new_session_notification_small'] = 'New attendance session created in {$a}';
+
+$string['session_reminder_subject'] = 'Reminder: Upcoming attendance session in {$a}';
+$string['session_reminder_message'] = 'This is a reminder about an upcoming attendance session:
+
+Course: {$a->course}
+Attendance: {$a->attendance}
+Date: {$a->date}
+End time: {$a->end}
+Description: {$a->description}';
+$string['session_reminder_small'] = 'Reminder: Upcoming attendance session in {$a}';
+
+// Email notification settings
+$string['emailnotificationsettings'] = 'Email notification settings';
+$string['emailnotificationsettings_help'] = 'Configure the email notifications that are sent to monitors when attendance sessions are created or upcoming.';
+
+$string['new_session_notification_subject_help'] = 'The subject line for emails sent when a new session is created. Available placeholders: {$a} for course shortname';
+$string['new_session_notification_message_help'] = 'The message body for emails sent when a new session is created. Available placeholders:
+<ul>
+    <li>{$a->course} - Course full name</li>
+    <li>{$a->attendance} - Attendance activity name</li>
+    <li>{$a->date} - Session date and time</li>
+    <li>{$a->end} - Session end time</li>
+    <li>{$a->description} - Session description</li>
+</ul>';
+
+$string['session_reminder_subject_help'] = 'The subject line for reminder emails sent before upcoming sessions. Available placeholders: {$a} for course shortname';
+$string['session_reminder_message_help'] = 'The message body for reminder emails sent before upcoming sessions. Available placeholders:
+<ul>
+    <li>{$a->course} - Course full name</li>
+    <li>{$a->attendance} - Attendance activity name</li>
+    <li>{$a->date} - Session date and time</li>
+    <li>{$a->end} - Session end time</li>
+    <li>{$a->description} - Session description</li>
+</ul>';
+
+$string['reminder_time_before_session'] = 'Send reminder before session';
+$string['reminder_time_before_session_help'] = 'How long before a session starts should reminder emails be sent to monitors.';
+
+// Message providers
+$string['messageprovider:new_session'] = 'Notification of new attendance session (for monitors)';
+$string['messageprovider:new_session_student'] = 'Notification of new attendance session (for students)';
+$string['messageprovider:session_reminder'] = 'Reminder for upcoming attendance session';
+
+// Task strings
+$string['process_notification_queue'] = 'Process attendance notification queue';

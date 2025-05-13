@@ -192,6 +192,39 @@ if ($ADMIN->fulltree) {
     $description = new lang_string('defaultwarningsettings_help', 'mod_attendance');
     $settings->add(new admin_setting_heading('defaultwarningsettings', $name, $description));
 
+    // Add email notification settings heading
+    $name = new lang_string('emailnotificationsettings', 'attendance');
+    $description = new lang_string('emailnotificationsettings_help', 'attendance');
+    $settings->add(new admin_setting_heading('emailnotificationsettings', $name, $description));
+
+    // New session notification settings
+    $settings->add(new admin_setting_configtext('attendance/new_session_notification_subject',
+        get_string('new_session_notification_subject', 'attendance'),
+        get_string('new_session_notification_subject_help', 'attendance'),
+        get_string('new_session_notification_subject', 'attendance'), PARAM_TEXT));
+
+    $settings->add(new admin_setting_configtextarea('attendance/new_session_notification_message',
+        get_string('new_session_notification_message', 'attendance'),
+        get_string('new_session_notification_message_help', 'attendance'),
+        get_string('new_session_notification_message', 'attendance'), PARAM_RAW));
+
+    // Session reminder settings
+    $settings->add(new admin_setting_configtext('attendance/session_reminder_subject',
+        get_string('session_reminder_subject', 'attendance'),
+        get_string('session_reminder_subject_help', 'attendance'),
+        get_string('session_reminder_subject', 'attendance'), PARAM_TEXT));
+
+    $settings->add(new admin_setting_configtextarea('attendance/session_reminder_message',
+        get_string('session_reminder_message', 'attendance'),
+        get_string('session_reminder_message_help', 'attendance'),
+        get_string('session_reminder_message', 'attendance'), PARAM_RAW));
+
+    // Reminder timing settings
+    $settings->add(new admin_setting_configduration('attendance/reminder_time_before_session',
+        get_string('reminder_time_before_session', 'attendance'),
+        get_string('reminder_time_before_session_help', 'attendance'),
+        24 * HOURSECS, PARAM_INT));
+
     $options = [];
     for ($i = 1; $i <= 100; $i++) {
         $options[$i] = "$i%";

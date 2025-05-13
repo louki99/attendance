@@ -14,33 +14,32 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Activity base class.
- *
- * @package   mod_attendance
- * @copyright 2020 Catalyst IT
- * @author    Dan Marsden
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace mod_attendance\task;
 
-namespace mod_attendance\analytics\indicator;
+defined('MOODLE_INTERNAL') || die();
 
 /**
- * Activity base class.
+ * Task to process the attendance notification queue
  *
- * @package   mod_attendance
- * @copyright 2020 Catalyst IT
- * @author    Dan Marsden
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    mod_attendance
+ * @copyright  2023
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class activity_base extends \core_analytics\local\indicator\community_of_inquiry_activity {
+class process_notification_queue extends \core\task\scheduled_task {
+    /**
+     * Get a descriptive name for this task
+     *
+     * @return string
+     */
+    public function get_name() {
+        return get_string('process_notification_queue', 'attendance');
+    }
 
     /**
-     * feedback_viewed_events
-     *
-     * @return string[]
+     * Execute the task
      */
-    protected function feedback_viewed_events() {
-        return ['\mod_attendance\event\session_report_viewed'];
+    public function execute() {
+        $count = \mod_attendance\notification_queue::process_queue(100);
+        mtrace("Processed $count attendance notification messages from the queue");
     }
-}
+} 

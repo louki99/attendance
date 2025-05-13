@@ -144,12 +144,27 @@ switch ($att->pageparams->action) {
                     }
                 }
                 
-                // Save teacher assignment
+                // Save teacher assignment and send notification
                 if (!empty($formdata->teacher)) {
                     $record = new stdClass();
                     $record->sessionid = $session->id;
                     $record->teacherid = $formdata->teacher;
                     $DB->insert_record('attendance_session_teachers', $record);
+                    
+                    // Send notification to the monitor
+                    debugging('Attempting to send notification to monitor ID: ' . $formdata->teacher);
+                    $result = \mod_attendance\notification_helper::notify_new_session($session, $course, $att, $formdata->teacher);
+                    debugging('Monitor notification result: ' . ($result ? 'success' : 'failed'));
+                }
+                
+                // Send notification to each student (candidat)
+                if (!empty($formdata->students)) {
+                    debugging('Found ' . count($formdata->students) . ' students to notify');
+                    foreach ($formdata->students as $studentid) {
+                        debugging('Attempting to send notification to student ID: ' . $studentid);
+                        $result = \mod_attendance\notification_helper::notify_new_session_student($session, $course, $att, $studentid);
+                        debugging('Student notification result: ' . ($result ? 'success' : 'failed'));
+                    }
                 }
             }
 

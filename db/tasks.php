@@ -49,4 +49,22 @@ $tasks = [
         'day' => '*',
         'dayofweek' => '*',
         'month' => '*', ],
+    [
+        'classname' => 'mod_attendance\task\send_session_reminders',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '*/1', // Run every hour
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*',
+    ],
+    [
+        'classname' => 'mod_attendance\task\process_notification_queue',
+        'blocking' => 0,
+        'minute' => '*/5', // Run every 5 minutes
+        'hour' => '*',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*',
+    ],
 ];

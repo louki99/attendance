@@ -194,5 +194,30 @@
         <KEY NAME="id" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
+    <TABLE NAME="attendance_notification_queue" COMMENT="Queue for attendance notifications to be sent asynchronously">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="component" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Message component"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Message name"/>
+        <FIELD NAME="userfromid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="User ID of sender"/>
+        <FIELD NAME="usertoid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="User ID of recipient"/>
+        <FIELD NAME="subject" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Message subject"/>
+        <FIELD NAME="fullmessage" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Full message text"/>
+        <FIELD NAME="fullmessageformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Format of full message"/>
+        <FIELD NAME="fullmessagehtml" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="HTML version of message"/>
+        <FIELD NAME="smallmessage" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Small message summary"/>
+        <FIELD NAME="notification" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Is this a notification or a message"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Course ID for the message context"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time the message was queued"/>
+        <FIELD NAME="timetoprocess" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time to process the message"/>
+        <FIELD NAME="sent" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Has this message been sent"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="sent_timetoprocess" UNIQUE="false" FIELDS="sent, timetoprocess" COMMENT="Index for finding pending messages to process"/>
+      </INDEXES>
+    </TABLE>
   </TABLES>
 </XMLDB>
