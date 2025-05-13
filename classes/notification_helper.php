@@ -51,6 +51,9 @@ class notification_helper {
         $subject = get_config('attendance', 'new_session_notification_subject');
         if (empty($subject)) {
             $subject = get_string('new_session_notification_subject', 'attendance', $course->shortname);
+        } else {
+            // Replace {$a} with course shortname in custom subject
+            $subject = str_replace('{$a}', $course->shortname, $subject);
         }
         
         debugging('Using notification subject: ' . $subject);
@@ -122,6 +125,9 @@ class notification_helper {
         $subject = get_config('attendance', 'session_reminder_subject');
         if (empty($subject)) {
             $subject = get_string('session_reminder_subject', 'attendance', $course->shortname);
+        } else {
+            // Replace {$a} with course shortname in custom subject
+            $subject = str_replace('{$a}', $course->shortname, $subject);
         }
 
         $message = get_config('attendance', 'session_reminder_message');
@@ -187,6 +193,9 @@ class notification_helper {
         $subject = get_config('attendance', 'new_session_notification_subject_student');
         if (empty($subject)) {
             $subject = get_string('new_session_notification_subject', 'attendance', $course->shortname);
+        } else {
+            // Replace {$a} with course shortname in custom subject
+            $subject = str_replace('{$a}', $course->shortname, $subject);
         }
 
         $message = get_config('attendance', 'new_session_notification_message_student');

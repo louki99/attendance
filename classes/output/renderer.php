@@ -979,11 +979,11 @@ class renderer extends plugin_renderer_base {
      */
     private function construct_take_user_controls(take_data $takedata, $user) {
         $celldata = [];
-        if ($user->enrolmentend && $user->enrolmentend < $takedata->sessioninfo->sessdate) {
+        if (isset($user->enrolmentend) && $user->enrolmentend && $user->enrolmentend < $takedata->sessioninfo->sessdate) {
             $celldata['text'] = get_string('enrolmentend', 'attendance', userdate($user->enrolmentend, '%d.%m.%Y'));
             $celldata['colspan'] = count($takedata->statuses) + 1;
             $celldata['class'] = 'userwithoutenrol';
-        } else if (!$user->enrolmentend && $user->enrolmentstatus == ENROL_USER_SUSPENDED) {
+        } else if (isset($user->enrolmentend) && !$user->enrolmentend && isset($user->enrolmentstatus) && $user->enrolmentstatus == ENROL_USER_SUSPENDED) {
             // No enrolmentend and ENROL_USER_SUSPENDED.
             $celldata['text'] = get_string('enrolmentsuspended', 'attendance');
             $celldata['colspan'] = count($takedata->statuses) + 1;
@@ -1021,7 +1021,7 @@ class renderer extends plugin_renderer_base {
             }
             $celldata['text'][] = html_writer::empty_tag('input', $params);
 
-            if ($user->enrolmentstart > $takedata->sessioninfo->sessdate + $takedata->sessioninfo->duration) {
+            if (isset($user->enrolmentstart) && $user->enrolmentstart > $takedata->sessioninfo->sessdate + $takedata->sessioninfo->duration) {
                 $celldata['warning'] = get_string('enrolmentstart', 'attendance',
                                                   userdate($user->enrolmentstart, '%H:%M %d.%m.%Y'));
                 $celldata['class'] = 'userwithoutenrol';
@@ -1041,11 +1041,11 @@ class renderer extends plugin_renderer_base {
     private function construct_take_session_controls(take_data $takedata, $user) {
         $celldata = [];
         $celldata['remarks'] = '';
-        if ($user->enrolmentend && $user->enrolmentend < $takedata->sessioninfo->sessdate) {
+        if (isset($user->enrolmentend) && $user->enrolmentend && $user->enrolmentend < $takedata->sessioninfo->sessdate) {
             $celldata['text'] = get_string('enrolmentend', 'attendance', userdate($user->enrolmentend, '%d.%m.%Y'));
             $celldata['colspan'] = count($takedata->statuses) + 1;
             $celldata['class'] = 'userwithoutenrol';
-        } else if (!$user->enrolmentend && $user->enrolmentstatus == ENROL_USER_SUSPENDED) {
+        } else if (isset($user->enrolmentend) && !$user->enrolmentend && isset($user->enrolmentstatus) && $user->enrolmentstatus == ENROL_USER_SUSPENDED) {
             // No enrolmentend and ENROL_USER_SUSPENDED.
             $celldata['text'] = get_string('enrolmentsuspended', 'attendance');
             $celldata['colspan'] = count($takedata->statuses) + 1;
@@ -1087,7 +1087,7 @@ class renderer extends plugin_renderer_base {
             }
             $celldata['remarks'] = $input;
 
-            if ($user->enrolmentstart > $takedata->sessioninfo->sessdate + $takedata->sessioninfo->duration) {
+            if (isset($user->enrolmentstart) && $user->enrolmentstart > $takedata->sessioninfo->sessdate + $takedata->sessioninfo->duration) {
                 $celldata['warning'] = get_string('enrolmentstart', 'attendance',
                                                   userdate($user->enrolmentstart, '%H:%M %d.%m.%Y'));
                 $celldata['class'] = 'userwithoutenrol';
@@ -2911,7 +2911,7 @@ class renderer extends plugin_renderer_base {
      * @return string
      */
     protected function user_picture($user, array $opts = null) {
-        if ($user->type == 'temporary') {
+        if (isset($user->type) && $user->type == 'temporary') {
             $attrib = [
                 'width' => '35',
                 'height' => '35',

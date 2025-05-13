@@ -174,10 +174,9 @@ switch ($att->pageparams->action) {
                 $message = get_string('sessionsgenerated', 'attendance', count($sessions));
             }
 
-            mod_attendance_notifyqueue::notify_success($message);
+            redirect($att->url_manage(), $message);
             // Redirect to the sessions tab always showing all sessions.
             $SESSION->attcurrentattview[$cm->course] = ATT_VIEW_ALL;
-            redirect($att->url_manage());
         }
         break;
     case mod_attendance_sessions_page_params::ACTION_UPDATE:
@@ -202,8 +201,7 @@ switch ($att->pageparams->action) {
             // Save customfields data.
             $att->save_customfields($sessionid, $formdata);
 
-            mod_attendance_notifyqueue::notify_success(get_string('sessionupdated', 'attendance'));
-            redirect($att->url_manage());
+            redirect($att->url_manage(), get_string('sessionupdated', 'attendance'));
         }
         break;
     case mod_attendance_sessions_page_params::ACTION_DELETE:
